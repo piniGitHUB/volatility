@@ -98,7 +98,9 @@ class WindowsHiberFileSpace32:
         self.Signature = self.base.read(offset,4)
 
         FirstTablePage = read_obj(self.base, hiber_types,
-	    ['_IMAGE_HIBER_HEADER', 'FirstTablePage'], self.offset)
+            ['_IMAGE_HIBER_HEADER', 'FirstTablePage'], self.offset)
+        if FirstTablePage == 0: # Probably an inactive hiberfile
+            FirstTablePage = 3
 
         (system_time_offset, tmp) = get_obj_offset(hiber_types, \
             ['_IMAGE_HIBER_HEADER', 'SystemTime'])
