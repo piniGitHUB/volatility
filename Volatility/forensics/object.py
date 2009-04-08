@@ -104,6 +104,37 @@ def read_unicode_string(addr_space, types, member_list, vaddr):
     
     return readBuf
 
+def read_unicode_string_buf(data, virt_addr_space, types, member_list, doffset):
+    '''
+    Reads a unicode string in virtual address space that is indicated
+    by a pointer in a buffer (e.g. in pool scanners)
+    '''       
+    
+    offset = 0
+    if len(member_list) > 1:
+        (offset, current_type) = get_obj_offset(types, member_list)
+
+    buf    = read_obj_from_buf(data, types, ['_UNICODE_STRING', 'Buffer'], doffset + offset)
+    length = read_obj_from_buf(data, types, ['_UNICODE_STRING', 'Length'], doffset + offset)
+    
+    if length == 0x0:
+        return ""
+
+    if buf is None or length is None:
+        return None
+
+    readBuf = read_string(virt_addr_space, types, ['char'], buf, length)
+    
+    if readBuf is None:
+        return None
+    
+    try:
+        readBuf = readBuf.decode('UTF-16').encode('ascii', 'backslashreplace')
+    except:
+        return None
+    
+    return readBuf
+ 
 def read_unicode_string_p(phys_addr_space, virt_addr_space, types, member_list, phys_addr):
     '''
     Reads a unicode string in virtual address space that is indicated
@@ -143,6 +174,14 @@ def read_string(addr_space, types, member_list, vaddr, max_length=256):
 
     return val    
     
+def read_string_buf(data, types, member_list, vaddr, max_length=256):
+    offset = 0
+    if len(member_list) > 1:
+        (offset, current_type) = get_obj_offset(types, member_list)
+
+    val = data[vaddr+offset: vaddr+offset+max_length]
+
+    return val
 
 def read_null_string(addr_space, types, member_list, vaddr, max_length=256):
     string = read_string(addr_space, types, member_list, vaddr, max_length)

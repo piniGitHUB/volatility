@@ -262,66 +262,107 @@ class PoolScanner(SlidingMemoryScanner):
         else:
              return self.climit
 
-    def check_blocksize_geq(self, buff, found):
-
+    def get_blocksize(self, buff, found):
         pool_hdr_val = read_obj_from_buf(buff,self.data_types, \
             ['_POOL_HEADER', 'Ulong1'],found-4)
         if pool_hdr_val == None:
-            return False
+            return None
 
-        BlockSize = (pool_hdr_val >> 16) & 0x1FF
-        pool_size = BlockSize * 0x8  
+        BlockSize = (pool_hdr_val >> 16) & 0x1FF  
+        
+        return BlockSize
+        
+    def get_poolsize(self, buff, free):
+        BlockSize = self.get_blocksize(buff, free)
+        
+        if BlockSize == None:
+            return None
+            
+        return BlockSize * 8 
+
+    def check_blocksize_geq(self, buff, found):
+        pool_size = self.get_poolsize(buff, found)
+          
         if pool_size >= self.outer.pool_size:
             return True
         
         return False
 
     def check_blocksize_equal(self, buff, found):
-
-        pool_hdr_val = read_obj_from_buf(buff,self.data_types, \
-            ['_POOL_HEADER', 'Ulong1'],found-4)
-        if pool_hdr_val == None:
-            return False
-
-        BlockSize = (pool_hdr_val >> 16) & 0x1FF
-        pool_size = BlockSize * 0x8
+        pool_size = self.get_poolsize(buff, found)
  
         if pool_size == self.outer.pool_size:
             return True
-        
+
         return False
+
+    def get_pooltype(self, buff, found):
+        data_types = meta_info.DataTypes
+        pool_hdr_val = read_obj_from_buf(buff, self.data_types, \
+            ['_POOL_HEADER', 'Ulong1'], found-4)
+        if pool_hdr_val == None:
+            return False
+
+        PoolType = (pool_hdr_val >> 16) & 0xFFFF
+        PoolType = (PoolType & 0xFE00) >> 9    
+        
+        return PoolType   
 
     def check_paged_pooltype(self, buff, found):
-        data_types = meta_info.DataTypes
-        pool_hdr_val = read_obj_from_buf(buff,self.data_types, \
-            ['_POOL_HEADER', 'Ulong1'],found-4)
-        if pool_hdr_val == None:
-            return False           
- 
-        PoolType = (pool_hdr_val >> 16) & 0xFFFF
-        PoolType = (PoolType & 0xFE00) >> 9 
+        return self.check_pooltype_paged(buff, found)
 
-        if ((PoolType == 0) or ((PoolType % 2) == 0)):
+    def check_pooltype(self, buff, found):
+        return self.check_pooltype_nonpaged_or_free(buff, found)
+        
+    def check_pooltype_free(self, buff, found):
+        PoolType = self.get_pooltype(buff, free)
+        
+        if PoolType == 0:
             return True
-            
+        
         return False
         
-    def check_pooltype(self, buff, found):
-        data_types = meta_info.DataTypes
-        pool_hdr_val = read_obj_from_buf(buff,self.data_types, \
-            ['_POOL_HEADER', 'Ulong1'],found-4)
-        if pool_hdr_val == None:
-            return False           
- 
-        PoolType = (pool_hdr_val >> 16) & 0xFFFF
-        PoolType = (PoolType & 0xFE00) >> 9 
+    def check_pooltype_nonfree(self, buff, found):
+        PoolType = self.get_pooltype(buff, free)
+        
+        if PoolType != 0:
+            return True
+        
+        return False  
 
+    def check_pooltype_nonpaged(self, buff, found):
+        PoolType = self.get_pooltype(buff, found)
+        
+        if ((PoolType > 0) and ((PoolType % 2) == 1)):
+            return True
+
+        return False
+
+    def check_pooltype_nonpaged_or_free(self, buff, found):
+        PoolType = self.get_pooltype(buff, found)
+        
         if ((PoolType == 0) or ((PoolType % 2) == 1)):
             return True
-            
+
         return False
                 
-    def check_poolindex(self, buff, found):
+    def check_pooltype_paged(self, buff, found):
+        PoolType = self.get_pooltype(buff, found)
+        
+        if ((PoolType > 0) and ((PoolType % 2) == 0)):
+            return True
+
+        return False
+
+    def check_pooltype_paged_or_free(self, buff, found):
+        PoolType = self.get_pooltype(buff, found)
+        
+        if ((PoolType == 0) or ((PoolType % 2) == 0)):
+            return True
+
+        return False
+
+    def get_poolindex(self, buff, found):
         data_types = meta_info.DataTypes
         pool_hdr_val = read_obj_from_buf(buff,self.data_types, \
             ['_POOL_HEADER', 'Ulong1'],found-4)
@@ -330,12 +371,28 @@ class PoolScanner(SlidingMemoryScanner):
 
         PoolIndex = (pool_hdr_val) & 0xFFFF
         PoolIndex = (PoolIndex & 0xFE00) >> 9 
-
+        
+        return PoolIndex
+                
+    def check_poolindex(self, buff, found):
+        return self.check_poolindex_zero(buff, found)
+        
+    def check_poolindex_zero(self, buff, found):
+        PoolIndex = self.get_poolindex(buff, found)
+    
         if PoolIndex == 0:
             return True
-
+            
         return False
-
+        
+    def check_poolindex_nonzero(self, buff, found):
+        PoolIndex = self.get_poolindex(buff, found)
+    
+        if PoolIndex != 0:
+            return True
+            
+        return False
+                
     def check_addr(self,buff,found):
        cnt = 0
        for func in self.constraints:

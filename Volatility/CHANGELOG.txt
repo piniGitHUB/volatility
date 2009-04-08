@@ -1,5 +1,17 @@
 Changelog
 
+04.8.2009      Volatility-1.3.1  moyix
+    * Update: Pool scanning enhancements
+    * Files:
+        forensics/win32/scan2.py
+        forensics/object.py
+    Description:
+      Incorporated new functions written by Andreas Schuster to allow
+      more fine-grained checks in pool scanners, and modularize some of
+      the accessors (get_poolsize, get_poolsize, etc.). The patch also
+      adds read_unicode_string_buf and read_string_buf, which operate on
+      string buffers. Thanks to Andreas Schuster for the patch.
+
 04.7.2009      Volatility-1.3    awalters
     * Update: Handle table parsing
     * Files:
