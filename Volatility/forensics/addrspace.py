@@ -32,6 +32,11 @@
 import os
 import struct
 
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
+
 class FileAddressSpace:
     def __init__(self, fname, mode='rb', fast=False):
         self.fname = fname
@@ -70,3 +75,13 @@ class FileAddressSpace:
 
     def close():
         self.fhandle.close()
+
+class BufferAddressSpace(FileAddressSpace):
+    def __init__(self, buf, fast=False):
+        self.fname = "String buffer"
+        self.name = self.fname
+        self.fhandle = StringIO(buf)
+        self.fsize = len(buf)
+        
+        if fast == True:
+            self.fast_fhandle = StringIO(buf)
