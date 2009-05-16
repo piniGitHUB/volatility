@@ -49,7 +49,7 @@ class InvalidMember(Exception):
 
 class Object(object):
 
-    def __new__(pcls, theType, offset, vm, parent=None, profile=None, objdefs=None):
+    def __new__(pcls, theType, offset, vm, parent=None, profile=None):
 
         theTypeName = None
 
@@ -59,12 +59,11 @@ class Object(object):
             theTypeName = theType.name
 
         # Need to check for any derived object types that may be 
-	# found in the global memory registry.
-        if theTypeName and not (objdefs == None) :
-            for objdef in objdefs:
-                FQName = objdef + "." + theTypeName
-                if MemoryRegistry.OBJECT_CLASSES.objects.has_key(FQName):
-                    return MemoryRegistry.OBJECT_CLASSES[FQName](theTypeName, offset,vm,parent,profile)
+        # found in the global memory registry.
+        if theTypeName:
+            if MemoryRegistry.OBJECT_CLASSES.objects.has_key(theTypeName):
+                return MemoryRegistry.OBJECT_CLASSES[theTypeName](theTypeName, \
+                    offset,vm,parent,profile)
 
         obj = object.__new__(pcls)
         return obj

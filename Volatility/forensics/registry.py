@@ -87,7 +87,7 @@ class MemoryRegistry:
                         try:
                             if path not in self.module_paths:
                                 ## If we do not have the module in the 
-				## cache, we load it now
+                                ## cache, we load it now
                                 try:
                                     #open the plugin file
                                     fd = open(path ,"r")
@@ -245,8 +245,9 @@ class VolatilityObjectRegistry(MemoryRegistry):
         MemoryRegistry.__init__(self,ParentClass)
         for cls in self.classes:
             ## The name of the class is the object name
-            obj = ("%s" % cls).split()[-1]
-            obj = obj[1:-2]
+            #obj = ("%s" % cls).split()[-1]
+            #obj = obj[1:-2]
+            obj = cls.__name__
             try:
                 raise Exception("Object %s has already been defined by %s" % (obj,self.objects[obj]))
             except KeyError:
