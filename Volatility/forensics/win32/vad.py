@@ -390,7 +390,7 @@ def vad_dump(addr_space, types, VadRoot, name, offset, dir):
         for i in range(0,NumberOfPages):
             page_addr = StartingVpn+i*0x1000
             if not addr_space.is_valid_address(page_addr):
-                range_data + ('\0' * 0x1000)
+                range_data += ('\0' * 0x1000)
                 continue
             page_read = addr_space.read(page_addr, 0x1000)
             if page_read == None:
