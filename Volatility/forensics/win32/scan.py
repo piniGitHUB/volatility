@@ -112,15 +112,18 @@ class ScanObject:
 
 
 def format_time(time):
-    ts=strftime("%a %b %d %H:%M:%S %Y",
-                    gmtime(time))
+    try:
+        ts=strftime("%a %b %d %H:%M:%S %Y",gmtime(time))
+    except ValueError:
+        return "[invalid]"
     return ts
 
 def format_dot_time(time):
-    ts=strftime("%H:%M:%S\\n%Y-%m-%d",
-                    gmtime(time))
+    try:
+        ts=strftime("%H:%M:%S\\n%Y-%m-%d",gmtime(time))
+    except:
+        return "[invalid]"
     return ts
-
 
 def check_dispatch_header(address,object):
 
