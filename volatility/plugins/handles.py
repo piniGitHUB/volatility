@@ -91,4 +91,7 @@ class Handles(taskmods.DllList):
                     else:
                         name = str(handle.NameInfo.Name)
 
+                    if not handle.is_valid():
+                        continue
+
                     yield pid, handle, object_type, name

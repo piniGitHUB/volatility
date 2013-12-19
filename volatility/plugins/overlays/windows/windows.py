@@ -562,6 +562,15 @@ class _OBJECT_HEADER(obj.CType):
 
         return type_obj.Name.v()
 
+    def is_valid(self):
+        if not obj.CType.is_valid(self):
+            return False
+
+        if self.PointerCount > 0x1000000 or self.PointerCount < 0:
+            return False
+
+        return True
+
 class _FILE_OBJECT(obj.CType):
     """Class for file objects"""
 
