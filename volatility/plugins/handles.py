@@ -72,6 +72,10 @@ class Handles(taskmods.DllList):
             pid = task.UniqueProcessId
             if task.ObjectTable.HandleTableList:
                 for handle in task.ObjectTable.handles():
+                    
+                    if not handle.is_valid():
+                        continue
+
                     name = ""
                     object_type = handle.get_object_type()
                     if object_type == "File":
@@ -90,8 +94,5 @@ class Handles(taskmods.DllList):
                         name = ''
                     else:
                         name = str(handle.NameInfo.Name)
-
-                    if not handle.is_valid():
-                        continue
 
                     yield pid, handle, object_type, name
