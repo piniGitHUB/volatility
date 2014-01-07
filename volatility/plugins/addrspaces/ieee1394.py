@@ -20,6 +20,7 @@
 #
 
 import time
+import volatility.debug as debug
 import urlparse
 import volatility.addrspace as addrspace
 
@@ -27,7 +28,7 @@ import volatility.addrspace as addrspace
 check = urlparse.urlsplit("firewire://method/0")
 urlparse_broken = False
 if check[1] != 'method':
-  urlparse_broken = True
+    urlparse_broken = True
 
 def FirewireRW(netloc, location):
     if netloc in fw_implementations:
@@ -66,13 +67,14 @@ class FWForensic1394(object):
     def __init__(self, location):
         """Initializes the firewire implementation"""
         self.location = location.strip('/')
+        debug.info("Waiting for 5s firewire to settle")
         self._bus = forensic1394.Bus()
         self._bus.enable_sbp2()
+        time.sleep(5)
         self._device = None
 
     def is_valid(self):
         try:
-            time.sleep(2)
             devices = self._bus.devices()
             # FIXME: Base the device off the location rather than hardcoded first remote device
             self._device = devices[int(self.location)]
@@ -127,7 +129,7 @@ class FirewireAddressSpace(addrspace.BaseAddressSpace):
         self.name = "Firewire using " + str(netloc) + " at " + str(path)
         # We have no way of knowing how big a firewire space is...
         # Set it to the maximum for the moment
-        # TODO: Find a way of determining the size safely and reliably from the space itself 
+        # TODO: Find a way of determining the size safely and reliably from the space itself
         self.size = 0xFFFFFFFF
 
     def intervals(self, start, size):
